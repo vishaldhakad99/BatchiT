@@ -197,5 +197,3 @@ BatchiT is structured to compile seamlessly to native Android using Capacitor. S
 
 ---
 
-## 📄 License
-ISC License © BatchiT Team.
