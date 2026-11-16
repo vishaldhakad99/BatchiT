@@ -1,0 +1,18 @@
+{
+  "short_name": "BatchiT",
+  "name": "BatchiT - Private Social Messaging",
+  "description": "Your Moments. Your People. Your Privacy.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#09090F",
+  "theme_color": "#8B5CF6",
+  "display": "standalone",
+  "orientation": "portrait"
+}

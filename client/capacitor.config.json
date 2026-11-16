@@ -1,0 +1,9 @@
+{
+  "appId": "com.batchit.app",
+  "appName": "BatchiT",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}

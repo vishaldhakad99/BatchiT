@@ -1,0 +1,23 @@
+{
+  "name": "batchit",
+  "version": "1.0.0",
+  "description": "BatchiT - Premium Private Social Messaging Platform",
+  "scripts": {
+    "server:dev": "npm --prefix server run dev",
+    "server:start": "npm --prefix server start",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "test:backend": "npm --prefix server test"
+  },
+  "keywords": [
+    "batchit",
+    "mern",
+    "webrtc",
+    "socket.io",
+    "e2ee",
+    "snaps",
+    "messaging"
+  ],
+  "author": "BatchiT Team",
+  "license": "ISC"
+}
