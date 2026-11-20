@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/common/Logo';
 import api, { getApiBaseUrl, setCustomServerUrl } from '../services/api';
+import ServerConfigModal from '../components/common/ServerConfigModal';
 import {
   Lock,
   Mail,
@@ -30,6 +31,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [currentServerUrl, setCurrentServerUrl] = useState(() => getApiBaseUrl().replace('/api', ''));
   const [serverStatus, setServerStatus] = useState('checking'); // 'checking' | 'connected' | 'unreachable'
+  const [showServerModal, setShowServerModal] = useState(false);
 
   // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -58,16 +60,7 @@ const LoginPage = () => {
   }, [currentServerUrl]);
 
   const handleConfigureServer = () => {
-    const entered = window.prompt(
-      'Enter your Laptop/PC Backend Server IP (e.g. 10.98.125.78:5000 or 192.168.43.1:5000):',
-      currentServerUrl
-    );
-    if (entered !== null && entered.trim()) {
-      setCustomServerUrl(entered.trim());
-      const updated = getApiBaseUrl().replace('/api', '');
-      setCurrentServerUrl(updated);
-      checkServerHealth();
-    }
+    setShowServerModal(true);
   };
 
   const handleSubmit = async (e) => {
@@ -313,6 +306,17 @@ const LoginPage = () => {
           </div>
         </div>
       )}
+
+      {/* Server Config Modal */}
+      <ServerConfigModal
+        isOpen={showServerModal}
+        onClose={() => setShowServerModal(false)}
+        currentUrl={currentServerUrl}
+        onServerUpdated={(newUrl) => {
+          setCurrentServerUrl(newUrl);
+          checkServerHealth();
+        }}
+      />
     </div>
   );
 };

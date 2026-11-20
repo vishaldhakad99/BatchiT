@@ -69,8 +69,8 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    server.listen(config.port, () => {
-      logger.info(`⚡ BatchiT Server running on port ${config.port} in ${config.nodeEnv} mode`);
+    server.listen(config.port, '0.0.0.0', () => {
+      logger.info(`⚡ BatchiT Server running on 0.0.0.0:${config.port} in ${config.nodeEnv} mode`);
       logger.info(`🚀 API Endpoint: http://localhost:${config.port}/api`);
     });
   } catch (error) {
