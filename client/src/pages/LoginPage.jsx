@@ -110,24 +110,24 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-batchit-bg text-batchit-textPrimary flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-y-auto selection:bg-batchit-purple selection:text-white">
+    <div className="min-h-[100dvh] w-full bg-batchit-bg text-batchit-textPrimary flex flex-col items-center justify-start sm:justify-center px-4 pt-6 pb-12 sm:py-10 relative overflow-y-auto smooth-scroll selection:bg-batchit-purple selection:text-white">
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 -left-32 w-80 h-80 bg-batchit-purple/15 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-batchit-pink/15 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md z-10 py-6 sm:py-2">
-        <div className="flex justify-center mb-6">
-          <Link to="/">
-            <Logo size="lg" />
+      <div className="w-full max-w-md z-10 my-auto py-2">
+        <div className="flex justify-center mb-4">
+          <Link to="/" className="inline-block hover:opacity-90 transition-opacity">
+            <Logo size="md" />
           </Link>
         </div>
 
         {/* Server Status Pill */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-3.5">
           <button
             type="button"
             onClick={handleConfigureServer}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold border transition-all active:scale-95 ${
               serverStatus === 'connected'
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                 : serverStatus === 'checking'
@@ -153,21 +153,21 @@ const LoginPage = () => {
         </div>
 
         <div className="bg-batchit-card border border-batchit-border rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-xl">
-          <div className="mb-5">
+          <div className="mb-4">
             <h2 className="text-xl sm:text-2xl font-black text-white">Welcome Back</h2>
-            <p className="text-xs sm:text-sm text-batchit-textSecondary mt-1">
+            <p className="text-xs sm:text-sm text-batchit-textSecondary mt-0.5">
               Sign in to your private BatchiT circle
             </p>
           </div>
 
           {error && (
-            <div className="mb-5 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-fade-in">
+            <div className="mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span className="leading-snug">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1">
                 Username or Email

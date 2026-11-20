@@ -55,7 +55,7 @@ const AppLayout = () => {
     (location.pathname.startsWith('/chat/') && location.pathname !== '/chat');
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-batchit-bg text-batchit-textPrimary">
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-batchit-bg text-batchit-textPrimary">
       {/* Global Real-time WebRTC Calling Overlay */}
       <CallModal />
 

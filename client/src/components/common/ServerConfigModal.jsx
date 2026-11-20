@@ -54,8 +54,8 @@ const ServerConfigModal = ({ isOpen, onClose, currentUrl, onServerUpdated }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
-      <div className="bg-batchit-card border border-batchit-border w-full max-w-md rounded-3xl p-6 shadow-2xl relative text-batchit-textPrimary">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+      <div className="bg-batchit-card border border-batchit-border w-full max-w-md max-h-[92vh] overflow-y-auto smooth-scroll rounded-3xl p-5 sm:p-6 shadow-2xl relative text-batchit-textPrimary">
         {/* Close Button */}
         <button
           onClick={onClose}

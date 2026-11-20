@@ -56,11 +56,24 @@
   border: 1px solid rgba(39, 39, 56, 0.8);
 }
 
-/* Mobile Safe Area insets */
+/* Mobile Safe Area insets & Smooth scrolling */
+html, body {
+  height: 100%;
+  width: 100%;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 .pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
 }
 
 .pt-safe {
-  padding-top: max(env(safe-area-inset-top, 0px), 8px);
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+}
+
+/* Custom utility for smooth touch scrolling */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
