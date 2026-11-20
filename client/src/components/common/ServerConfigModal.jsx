@@ -11,9 +11,9 @@ const ServerConfigModal = ({ isOpen, onClose, currentUrl, onServerUpdated }) => 
   if (!isOpen) return null;
 
   const presets = [
-    { label: 'Wi-Fi IP', url: 'http://10.98.125.78:5000' },
-    { label: 'Mobile Hotspot', url: 'http://192.168.43.1:5000' },
-    { label: 'Localhost', url: 'http://127.0.0.1:5000' }
+    { label: '🌐 Cloud Server (Render)', url: 'https://batchit-server.onrender.com' },
+    { label: '📶 Local Wi-Fi', url: 'http://10.98.125.78:5000' },
+    { label: '📱 Mobile Hotspot', url: 'http://192.168.43.1:5000' }
   ];
 
   const handleTestConnection = async (targetUrl = urlInput) => {
@@ -22,20 +22,21 @@ const ServerConfigModal = ({ isOpen, onClose, currentUrl, onServerUpdated }) => 
 
     let clean = (targetUrl || '').trim().replace(/\/+$/, '');
     if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-      clean = `http://${clean}`;
+      clean = `https://${clean}`;
     }
     const pingEndpoint = clean.endsWith('/api') ? `${clean}/auth/me` : `${clean}/api/auth/me`;
 
     try {
-      const res = await axios.get(pingEndpoint, { timeout: 4000 });
-      setTestResult({ success: true, message: 'Server Connected Successfully! (HTTP 200)' });
+      // 25s timeout for Render free tier cold-start wake up
+      const res = await axios.get(pingEndpoint, { timeout: 25000 });
+      setTestResult({ success: true, message: 'Cloud Server Online & Connected! 🟢' });
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 200)) {
-        setTestResult({ success: true, message: 'Server Online & Responding! 🟢' });
+        setTestResult({ success: true, message: 'Cloud Server Online & Responding! 🟢' });
       } else {
         setTestResult({
           success: false,
-          message: 'Connection Failed 🔴. Make sure laptop and phone are on the same Wi-Fi or Mobile Hotspot.'
+          message: 'Connection Failed 🔴. If using Render, server may be waking up (wait 30s) or check your URL.'
         });
       }
     } finally {
@@ -137,12 +138,12 @@ const ServerConfigModal = ({ isOpen, onClose, currentUrl, onServerUpdated }) => 
         )}
 
         {/* Helpful Tip */}
-        <div className="mb-5 p-3 rounded-xl bg-batchit-purple/5 border border-batchit-purple/20 text-[11px] text-batchit-textSecondary space-y-1">
+        <div className="mb-5 p-3 rounded-xl bg-batchit-purple/5 border border-batchit-purple/20 text-[11px] text-batchit-textSecondary space-y-1.5">
           <p className="font-semibold text-batchit-purple flex items-center gap-1.5">
-            <Wifi className="w-3.5 h-3.5" /> Connection Guide:
+            <Wifi className="w-3.5 h-3.5" /> 24/7 Worldwide vs Local Connection:
           </p>
-          <p>• Make sure Laptop and Phone are on the <b>SAME Wi-Fi</b> or <b>Mobile Hotspot</b>.</p>
-          <p>• On Laptop, keep <b>Start-BatchiT-Server.bat</b> running.</p>
+          <p>• <b>Cloud Server (Render)</b>: Anyone in Bhopal, Dubai, or anywhere in the world on 4G/5G/Wi-Fi can connect 24/7 without needing your laptop on!</p>
+          <p>• <b>Local Wi-Fi / Hotspot</b>: For testing directly on your laptop with Start-BatchiT-Server.bat.</p>
         </div>
 
         {/* Buttons */}

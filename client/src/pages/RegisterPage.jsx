@@ -43,7 +43,7 @@ const RegisterPage = () => {
     setServerStatus('checking');
     try {
       const baseUrl = getApiBaseUrl();
-      const res = await axios.get(`${baseUrl}/auth/me`, { timeout: 4000 });
+      const res = await axios.get(`${baseUrl}/auth/me`, { timeout: 12000 });
       setServerStatus('connected');
     } catch (err) {
       // 401 means server is active and reachable (just unauthenticated)

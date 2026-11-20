@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Default Production Cloud Backend URL (Render / Cloud deployment)
+export const DEFAULT_CLOUD_URL = import.meta.env.VITE_API_URL || '';
+
 // Determine the appropriate API base URL dynamically
 export const getApiBaseUrl = () => {
   const saved = localStorage.getItem('batchit_server_url');
@@ -8,12 +11,18 @@ export const getApiBaseUrl = () => {
     return clean.endsWith('/api') ? clean : `${clean}/api`;
   }
 
+  // If cloud production URL is defined via build environment
+  if (DEFAULT_CLOUD_URL) {
+    const clean = DEFAULT_CLOUD_URL.trim().replace(/\/+$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+
   const isCapacitor =
     window.location.protocol === 'capacitor:' ||
     window.location.protocol === 'file:' ||
     (window.location.hostname === 'localhost' && (!window.location.port || window.location.port === '80'));
 
-  // In native Android APK, connect to the computer's backend server
+  // In native Android APK, use Cloud URL if set, otherwise fallback to local Wi-Fi
   if (isCapacitor) {
     return 'http://10.98.125.78:5000/api';
   }
@@ -29,13 +38,17 @@ export const getApiBaseUrl = () => {
   return '/api';
 };
 
+export const getServerBaseUrl = () => {
+  return getApiBaseUrl().replace(/\/api$/, '');
+};
+
 export const setCustomServerUrl = (url) => {
   if (!url) {
     localStorage.removeItem('batchit_server_url');
   } else {
     let clean = url.trim().replace(/\/+$/, '');
     if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-      clean = `http://${clean}`;
+      clean = `https://${clean}`;
     }
     localStorage.setItem('batchit_server_url', clean);
   }
@@ -44,6 +57,7 @@ export const setCustomServerUrl = (url) => {
 const api = axios.create({
   baseURL: getApiBaseUrl(),
   withCredentials: true,
+  timeout: 30000, // 30s timeout allows Render cold-start wake up without dropping
   headers: {
     'Content-Type': 'application/json'
   }

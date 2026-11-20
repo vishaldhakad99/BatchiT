@@ -44,7 +44,7 @@ const LoginPage = () => {
     setServerStatus('checking');
     try {
       const baseUrl = getApiBaseUrl();
-      await axios.get(`${baseUrl}/auth/me`, { timeout: 4000 });
+      await axios.get(`${baseUrl}/auth/me`, { timeout: 12000 });
       setServerStatus('connected');
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 200)) {

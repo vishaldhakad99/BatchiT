@@ -1,14 +1,32 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import api from '../services/api';
+import api, { getServerBaseUrl } from '../services/api';
 
 const SocketContext = createContext(null);
 
 const ICE_SERVERS = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun.services.mozilla.com' },
+    // OpenRelay Public TURN Relay for cross-country and mobile carrier NAT traversal (4G/5G, India to UAE/Global)
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
   ]
 };
 
@@ -78,28 +96,8 @@ export const SocketProvider = ({ children }) => {
     }
 
     const getSocketUrl = () => {
-      const saved = localStorage.getItem('batchit_server_url');
-      if (saved) {
-        return saved.trim().replace(/\/api$/, '').replace(/\/+$/, '');
-      }
-
-      const isCapacitor =
-        window.location.protocol === 'capacitor:' ||
-        window.location.protocol === 'file:' ||
-        (window.location.hostname === 'localhost' && (!window.location.port || window.location.port === '80'));
-
-      if (isCapacitor) {
-        return 'http://10.98.125.78:5000';
-      }
-
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        if (window.location.port === '5173') {
-          return '/';
-        }
-        return `http://${window.location.hostname}:5000`;
-      }
-
-      return '/';
+      const serverUrl = getServerBaseUrl();
+      return serverUrl || '/';
     };
 
     const newSocket = io(getSocketUrl(), {
