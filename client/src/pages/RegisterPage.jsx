@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/common/Logo';
 import { getApiBaseUrl, setCustomServerUrl } from '../services/api';
-import { Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck, Server } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+  ShieldCheck,
+  Server,
+  Wifi,
+  WifiOff,
+  RefreshCw
+} from 'lucide-react';
+import axios from 'axios';
 
 const RegisterPage = () => {
   const { register } = useAuth();
@@ -19,17 +34,39 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentServerUrl, setCurrentServerUrl] = useState(() => getApiBaseUrl().replace('/api', ''));
+  const [serverStatus, setServerStatus] = useState('checking'); // 'checking' | 'connected' | 'unreachable'
+
+  // Check backend server connection
+  const checkServerHealth = async () => {
+    setServerStatus('checking');
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await axios.get(`${baseUrl}/auth/me`, { timeout: 4000 });
+      setServerStatus('connected');
+    } catch (err) {
+      // 401 means server is active and reachable (just unauthenticated)
+      if (err.response && (err.response.status === 401 || err.response.status === 200)) {
+        setServerStatus('connected');
+      } else {
+        setServerStatus('unreachable');
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkServerHealth();
+  }, [currentServerUrl]);
 
   const handleConfigureServer = () => {
     const entered = window.prompt(
-      'Enter your Laptop/PC Server IP (e.g. 10.98.125.78:5000 or 192.168.43.1:5000):',
+      'Enter your Laptop/PC Backend Server IP (e.g. 10.98.125.78:5000 or 192.168.43.1:5000):',
       currentServerUrl
     );
     if (entered !== null && entered.trim()) {
       setCustomServerUrl(entered.trim());
       const updated = getApiBaseUrl().replace('/api', '');
       setCurrentServerUrl(updated);
-      alert(`Server IP configured to: ${updated}`);
+      checkServerHealth();
     }
   };
 
@@ -40,11 +77,15 @@ const RegisterPage = () => {
     }));
   };
 
+  const isMinLength = formData.password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(formData.password);
+  const hasNumber = /[0-9]/.test(formData.password);
+  const isPasswordValid = isMinLength && hasUppercase && hasNumber;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Client-side quick checks
     if (formData.username.length < 3) {
       setError('Username must be at least 3 characters.');
       return;
@@ -53,12 +94,8 @@ const RegisterPage = () => {
       setError('Username can only contain letters, numbers, underscores and dots.');
       return;
     }
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters.');
-      return;
-    }
-    if (!/[A-Z]/.test(formData.password) || !/[0-9]/.test(formData.password)) {
-      setError('Password must include at least one uppercase letter (A-Z) and one number (0-9).');
+    if (!isPasswordValid) {
+      setError('Please meet all password requirements: 8+ chars, 1 uppercase & 1 number.');
       return;
     }
 
@@ -74,7 +111,7 @@ const RegisterPage = () => {
     } catch (err) {
       if (!err.response) {
         setError(
-          `Cannot reach server at ${currentServerUrl}. Please make sure your Phone and Laptop are connected to the SAME Wi-Fi or Mobile Hotspot, or tap "(Change IP)" below.`
+          `Cannot reach server at ${currentServerUrl}. Please make sure phone and laptop are on the SAME Wi-Fi or Mobile Hotspot.`
         );
       } else {
         setError(err.response?.data?.message || 'Failed to create account.');
@@ -85,20 +122,50 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-batchit-bg text-batchit-textPrimary flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-y-auto">
+    <div className="min-h-screen bg-batchit-bg text-batchit-textPrimary flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-y-auto selection:bg-batchit-purple selection:text-white">
       {/* Background ambient lighting */}
-      <div className="absolute top-1/4 -right-32 w-80 h-80 bg-batchit-purple/20 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-32 w-80 h-80 bg-batchit-pink/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 -right-32 w-80 h-80 bg-batchit-purple/15 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-32 w-80 h-80 bg-batchit-pink/15 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md z-10 py-6 sm:py-0">
-        <div className="flex justify-center mb-6 sm:mb-8">
+      <div className="w-full max-w-md z-10 py-6 sm:py-2">
+        <div className="flex justify-center mb-6">
           <Link to="/">
             <Logo size="lg" />
           </Link>
         </div>
 
-        <div className="bg-batchit-card border border-batchit-border rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-xl">
-          <div className="mb-5 sm:mb-6">
+        {/* Server Status Pill */}
+        <div className="flex justify-center mb-4">
+          <button
+            type="button"
+            onClick={handleConfigureServer}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+              serverStatus === 'connected'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                : serverStatus === 'checking'
+                ? 'bg-batchit-card border-batchit-border text-batchit-textSecondary'
+                : 'bg-rose-500/15 border-rose-500/40 text-rose-300 animate-pulse'
+            }`}
+          >
+            {serverStatus === 'connected' ? (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            ) : serverStatus === 'checking' ? (
+              <RefreshCw className="w-3 h-3 animate-spin text-batchit-purple" />
+            ) : (
+              <WifiOff className="w-3 h-3 text-rose-400" />
+            )}
+            <span>
+              {serverStatus === 'connected'
+                ? `Server Online (${currentServerUrl.replace(/^https?:\/\//, '')})`
+                : serverStatus === 'checking'
+                ? 'Connecting to Server...'
+                : `Server Offline (Tap to Change IP)`}
+            </span>
+          </button>
+        </div>
+
+        <div className="bg-batchit-card border border-batchit-border rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-xl">
+          <div className="mb-5">
             <h2 className="text-xl sm:text-2xl font-black text-white">Create BatchiT Account</h2>
             <p className="text-xs sm:text-sm text-batchit-textSecondary mt-1">
               Your moments, your people, your privacy.
@@ -106,63 +173,75 @@ const RegisterPage = () => {
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-fade-in">
+            <div className="mb-5 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-              <span>{error}</span>
+              <span className="leading-snug">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1">
                 Username
               </label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="e.g. raven_01"
-                required
-                className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl px-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
-              />
+              <div className="relative">
+                <User className="w-4 h-4 text-batchit-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="e.g. raven_01"
+                  required
+                  autoCapitalize="none"
+                  className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl pl-10 pr-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1">
                 Display Name
               </label>
-              <input
-                type="text"
-                name="displayName"
-                value={formData.displayName}
-                onChange={handleChange}
-                placeholder="e.g. Raven Vance"
-                required
-                className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl px-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
-              />
+              <div className="relative">
+                <User className="w-4 h-4 text-batchit-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  name="displayName"
+                  value={formData.displayName}
+                  onChange={handleChange}
+                  placeholder="e.g. Raven Vance"
+                  required
+                  className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl pl-10 pr-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1">
                 Email Address
               </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="raven@domain.com"
-                required
-                className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl px-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
-              />
+              <div className="relative">
+                <Mail className="w-4 h-4 text-batchit-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="raven@domain.com"
+                  required
+                  autoCapitalize="none"
+                  className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl pl-10 pr-4 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-batchit-textSecondary uppercase tracking-wider mb-1">
                 Password
               </label>
               <div className="relative">
+                <Lock className="w-4 h-4 text-batchit-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -170,7 +249,7 @@ const RegisterPage = () => {
                   onChange={handleChange}
                   placeholder="Min. 8 characters, 1 uppercase & 1 number"
                   required
-                  className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl px-4 pr-12 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
+                  className="w-full h-11 bg-batchit-secondary border border-batchit-border rounded-2xl pl-10 pr-12 text-sm text-white placeholder-batchit-textMuted focus:outline-none focus:border-batchit-purple focus:ring-1 focus:ring-batchit-purple transition-all"
                 />
                 <button
                   type="button"
@@ -180,17 +259,45 @@ const RegisterPage = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* Real-time Password Requirements Checklist */}
+              <div className="grid grid-cols-3 gap-1.5 pt-2 text-[10px]">
+                <div
+                  className={`flex items-center gap-1 transition-colors ${
+                    isMinLength ? 'text-emerald-400 font-bold' : 'text-batchit-textMuted'
+                  }`}
+                >
+                  <span>{isMinLength ? '✓' : '○'}</span>
+                  <span>8+ Chars</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1 transition-colors ${
+                    hasUppercase ? 'text-emerald-400 font-bold' : 'text-batchit-textMuted'
+                  }`}
+                >
+                  <span>{hasUppercase ? '✓' : '○'}</span>
+                  <span>Uppercase</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1 transition-colors ${
+                    hasNumber ? 'text-emerald-400 font-bold' : 'text-batchit-textMuted'
+                  }`}
+                >
+                  <span>{hasNumber ? '✓' : '○'}</span>
+                  <span>1 Number</span>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-batchit-textSecondary pt-1">
+            <div className="flex items-center gap-2 text-[11px] text-batchit-textSecondary pt-1">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>E2EE ECDH keys are created locally in your browser.</span>
+              <span>E2EE private keys generated locally on your device.</span>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-2xl bg-gradient-to-r from-batchit-purple to-batchit-pink text-white font-bold text-sm shadow-lg shadow-purple-500/25 hover:opacity-95 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 mt-4"
+              disabled={loading || !isPasswordValid}
+              className="w-full h-12 rounded-2xl bg-gradient-to-r from-batchit-purple via-batchit-blue to-batchit-pink text-white font-bold text-sm shadow-lg shadow-purple-500/25 hover:opacity-95 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-40 mt-3"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -203,23 +310,13 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-batchit-border/60 text-center space-y-3">
+          <div className="mt-5 pt-4 border-t border-batchit-border/60 text-center space-y-2">
             <p className="text-xs text-batchit-textSecondary">
               Already have an account?{' '}
               <Link to="/login" className="text-batchit-purple font-bold hover:underline">
                 Sign In
               </Link>
             </p>
-
-            <button
-              type="button"
-              onClick={handleConfigureServer}
-              className="text-[11px] text-batchit-textMuted hover:text-batchit-purple flex items-center justify-center gap-1.5 mx-auto py-1 px-3 rounded-full bg-batchit-secondary border border-batchit-border/60 transition-all"
-            >
-              <Server className="w-3 h-3 text-batchit-purple" />
-              <span>Server: {currentServerUrl}</span>
-              <span className="text-batchit-purple font-semibold ml-0.5">(Change)</span>
-            </button>
           </div>
         </div>
       </div>

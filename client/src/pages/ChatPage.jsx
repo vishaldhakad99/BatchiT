@@ -534,7 +534,10 @@ const ChatPage = () => {
           <div className="h-16 px-4 bg-batchit-secondary border-b border-batchit-border flex items-center justify-between shrink-0 z-10">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setSelectedConv(null)}
+                onClick={() => {
+                  setSelectedConv(null);
+                  navigate('/chat');
+                }}
                 className="md:hidden p-2 rounded-xl text-batchit-textSecondary hover:text-white"
               >
                 <ArrowLeft className="w-5 h-5" />
